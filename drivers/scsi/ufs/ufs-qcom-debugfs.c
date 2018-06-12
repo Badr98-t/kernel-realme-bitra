@@ -277,6 +277,7 @@ static int ufs_qcom_dbg_pm_qos_open(struct inode *inode,
 static const struct file_operations ufs_qcom_dbg_pm_qos_desc = {
 	.open		= ufs_qcom_dbg_pm_qos_open,
 	.read		= seq_read,
+	.release	= single_release,
 };
 
 void ufs_qcom_dbg_add_debugfs(struct ufs_hba *hba, struct dentry *root)
