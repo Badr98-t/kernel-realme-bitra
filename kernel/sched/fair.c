@@ -7127,6 +7127,7 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 	bool rtg_high_prio_task = task_rtg_high_prio(p);
 	cpumask_t new_allowed_cpus;
 	bool skip_big_cluster = false;
+	struct task_struct *curr_tsk;
 	int mid_cap_orig_cpu = cpu_rq(smp_processor_id())->rd->mid_cap_orig_cpu;
 
 	/*
