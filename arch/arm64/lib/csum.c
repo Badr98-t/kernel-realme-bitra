@@ -52,7 +52,7 @@ unsigned int do_csum(const unsigned char *buff, int len)
 	 * main loop strictly excludes the tail, so the second loop will always
 	 * run at least once.
 	 */
-	while (len > 64) {
+	while (unlikely(len > 64)) {
 		__uint128_t tmp1, tmp2, tmp3, tmp4;
 
 		tmp1 = READ_ONCE_NOCHECK(*(__uint128_t *)ptr);
