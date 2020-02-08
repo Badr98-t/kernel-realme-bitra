@@ -235,16 +235,6 @@ static void scan_and_kill(unsigned long pages_needed)
 		/* Finally release the victim's task lock acquired earlier */
 		task_unlock(vtsk);
 	}
-
-	/* Wait until all the victims die or until the timeout is reached */
-	ret = wait_for_completion_timeout(&reclaim_done, RECLAIM_EXPIRES);
-	write_lock(&mm_free_lock);
-	if (!ret) {
-		/* Extra clean-up is needed when the timeout is hit */
-		reinit_completion(&reclaim_done);
-		for (i = 0; i < nr_to_kill; i++)
-			victims[i].mm = NULL;
-	}
 	victims_to_kill = 0;
 	nr_killed = (atomic_t)ATOMIC_INIT(0);
 	write_unlock(&mm_free_lock);
