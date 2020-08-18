@@ -4031,7 +4031,22 @@ static int sde_plane_atomic_set_property(struct drm_plane *plane,
 	} else {
 		pstate = to_sde_plane_state(state);
 		ret = msm_property_atomic_set(&psde->property_info,
-				&pstate->property_state, property, val);
+				property);
+		if (idx == PLANE_PROP_ZPOS) {
+			if (val & FOD_PRESSED_LAYER_ZORDER) {
+				val &= ~FOD_PRESSED_LAYER_ZORDER;
+				fod_val = 1;
+			}
+
+			fod_property = psde->property_info.
+					property_array[PLANE_PROP_FOD];
+			ret = msm_property_atomic_set(&psde->property_info,
+					&pstate->property_state,
+					fod_property, fod_val);
+			if (ret)
+				SDE_ERROR("failed to set fod prop");
+		}
+
 		if (!ret) {
 			idx = msm_property_index(&psde->property_info,
 					property);
