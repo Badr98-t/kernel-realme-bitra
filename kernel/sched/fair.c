@@ -7542,6 +7542,14 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 		goto target;
 	}
 
+	if (target_cpu != -1 && !idle_cpu(target_cpu) &&
+			best_idle_cpu != -1) {
+		curr_tsk = READ_ONCE(cpu_rq(target_cpu)->curr);
+		if (curr_tsk && schedtune_task_boost_rcu_locked(curr_tsk)) {
+			target_cpu = best_idle_cpu;
+		}
+	}
+
 	if (target_cpu == -1)
 		target_cpu = prefer_idle
 			? best_active_cpu
