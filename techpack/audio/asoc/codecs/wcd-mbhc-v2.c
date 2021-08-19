@@ -2194,6 +2194,8 @@ int wcd_mbhc_init(struct wcd_mbhc *mbhc, struct snd_soc_component *component,
 	const char *mbhc_cross_conn = "oplus,mbhc-check-cross-conn";
 	#endif /* OPLUS_ARCH_EXTENDS */
 
+ 	impedance_det_en = true;
+
 	#ifdef OPLUS_ARCH_EXTENDS
 	u32 check_irq_en = 0;
 	const char *mbhc_check_irq_en = "oplus,mbhc-check-irq-en";
