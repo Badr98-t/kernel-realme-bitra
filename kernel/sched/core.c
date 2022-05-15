@@ -9,6 +9,7 @@
 
 #include "sched.h"
 
+#include <linux/lrng.h>
 #include <linux/nospec.h>
 
 #include <linux/kcov.h>
