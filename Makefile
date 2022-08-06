@@ -719,6 +719,12 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, address-of-packed-member)
 
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS   += -Os
+KBUILD_AFLAGS   += -Os
+KBUILD_LDFLAGS  += -Os
+else ifeq ($(cc-name),clang)
+KBUILD_CFLAGS   += -O3 -march=armv8.1-a+crypto+fp16+rcpc
+KBUILD_AFLAGS   += -O3 -march=armv8.1-a+crypto+fp16+rcpc
+KBUILD_LDFLAGS  += -O3
 else
 KBUILD_CFLAGS   += -O2
 endif
