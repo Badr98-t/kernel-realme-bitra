@@ -859,6 +859,8 @@ void add_device_randomness(const void *buf, size_t len)
 }
 EXPORT_SYMBOL(add_device_randomness);
 
+static struct timer_rand_state input_timer_state = INIT_TIMER_RAND_STATE;
+
 /*
  * Interface for in-kernel drivers of true hardware RNGs.
  * Those devices may produce endless random bits and will be throttled
@@ -1075,7 +1077,109 @@ static void add_timer_randomness(struct timer_rand_state *state, unsigned int nu
 	 * delta is now minimum absolute delta. Round down by 1 bit
 	 * on general principles, and limit entropy estimate to 11 bits.
 	 */
-	bits = min(fls(delta >> 1), 11);
+	credit_entropy_bits(r, min_t(int, fls(delta>>1), 11));
+}
+
+void add_input_randomness(unsigned int type, unsigned int code,
+				 unsigned int value)
+{
+	static unsigned char last_value;
+
+	/* ignore autorepeat and the like */
+	if (value == last_value)
+		return;
+
+	last_value = value;
+	add_timer_randomness(&input_timer_state,
+			     (type << 4) ^ code ^ (code >> 4) ^ value);
+	trace_add_input_randomness(ENTROPY_BITS(&input_pool));
+}
+EXPORT_SYMBOL_GPL(add_input_randomness);
+
+static DEFINE_PER_CPU(struct fast_pool, irq_randomness);
+
+#ifdef ADD_INTERRUPT_BENCH
+static unsigned long avg_cycles, avg_deviation;
+
+#define AVG_SHIFT 8     /* Exponential average factor k=1/256 */
+#define FIXED_1_2 (1 << (AVG_SHIFT-1))
+
+static void add_interrupt_bench(cycles_t start)
+{
+        long delta = random_get_entropy() - start;
+
+        /* Use a weighted moving average */
+        delta = delta - ((avg_cycles + FIXED_1_2) >> AVG_SHIFT);
+        avg_cycles += delta;
+        /* And average deviation */
+        delta = abs(delta) - ((avg_deviation + FIXED_1_2) >> AVG_SHIFT);
+        avg_deviation += delta;
+}
+#else
+#define add_interrupt_bench(x)
+#endif
+
+static __u32 get_reg(struct fast_pool *f, struct pt_regs *regs)
+{
+	__u32 *ptr = (__u32 *) regs;
+	unsigned int idx;
+
+	if (regs == NULL)
+		return 0;
+	idx = READ_ONCE(f->reg_idx);
+	if (idx >= sizeof(struct pt_regs) / sizeof(__u32))
+		idx = 0;
+	ptr += idx++;
+	WRITE_ONCE(f->reg_idx, idx);
+	return *ptr;
+}
+
+void add_interrupt_randomness(int irq, int irq_flags)
+{
+	struct entropy_store	*r;
+	struct fast_pool	*fast_pool = this_cpu_ptr(&irq_randomness);
+	struct pt_regs		*regs = get_irq_regs();
+	unsigned long		now = jiffies;
+	cycles_t		cycles = random_get_entropy();
+	__u32			c_high, j_high;
+	__u64			ip;
+	unsigned long		seed;
+	int			credit = 0;
+
+	if (cycles == 0)
+		cycles = get_reg(fast_pool, regs);
+	c_high = (sizeof(cycles) > 4) ? cycles >> 32 : 0;
+	j_high = (sizeof(now) > 4) ? now >> 32 : 0;
+	fast_pool->pool[0] ^= cycles ^ j_high ^ irq;
+	fast_pool->pool[1] ^= now ^ c_high;
+	ip = regs ? instruction_pointer(regs) : _RET_IP_;
+	fast_pool->pool[2] ^= ip;
+	fast_pool->pool[3] ^= (sizeof(ip) > 4) ? ip >> 32 :
+		get_reg(fast_pool, regs);
+
+	fast_mix(fast_pool);
+	add_interrupt_bench(cycles);
+
+	if (unlikely(crng_init == 0)) {
+		if ((fast_pool->count >= 64) &&
+		    crng_fast_load((char *) fast_pool->pool,
+				   sizeof(fast_pool->pool))) {
+			fast_pool->count = 0;
+			fast_pool->last = now;
+		}
+		return;
+	}
+
+	if ((fast_pool->count < 64) &&
+	    !time_after(now, fast_pool->last + HZ))
+		return;
+
+	r = &input_pool;
+	if (!spin_trylock(&r->lock))
+		return;
+
+	fast_pool->last = now;
+	__mix_pool_bytes(r, &fast_pool->pool, sizeof(fast_pool->pool));
 
 	/*
 	 * As mentioned above, if we're in a hard IRQ, add_interrupt_randomness()
