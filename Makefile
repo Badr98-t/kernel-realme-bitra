@@ -422,7 +422,7 @@ AFLAGS_MODULE   =
 LDFLAGS_MODULE  = --strip-debug
 CFLAGS_KERNEL	=
 AFLAGS_KERNEL	=
-LDFLAGS_vmlinux =
+LDFLAGS_vmlinux = --strip-debug
 
 # Use USERINCLUDE when you must reference the UAPI directories only.
 USERINCLUDE    := \
@@ -725,7 +725,8 @@ KBUILD_CFLAGS   += -O2
 endif
 
 ifeq ($(ld-name),lld)
-LDFLAGS += -O3
+LDFLAGS += -O3 --strip-debug
+KBUILD_LDFLAGS += -O3 --strip-debug
 endif
 
 # Tell gcc to never replace conditional load with a non-conditional one
