@@ -21,6 +21,7 @@
 
 #include <soc/qcom/cmd-db.h>
 #include <soc/qcom/tcs.h>
+
 #include <dt-bindings/soc/qcom,rpmh-rsc.h>
 
 #include "rpmh-internal.h"
@@ -71,6 +72,18 @@
 
 #define ACCL_TYPE(addr)			((addr >> 16) & 0xF)
 #define NR_ACCL_TYPES			3
+
+#define rpmh_spin_lock(lock)				\
+do {	\
+	if (!oops_in_progress)\
+		spin_lock(lock);	\
+} while (0)
+
+#define rpmh_spin_unlock(lock)				\
+do {	\
+	if (!oops_in_progress)\
+		spin_unlock(lock);	\
+} while (0)
 
 static const char * const accl_str[] = {
 	"", "", "", "CLK", "VREG", "BUS",
@@ -449,9 +462,11 @@ done_write:
  * Return: 0 on success, -EINVAL on error.
  * Note: This call blocks until a valid data is written to the TCS.
  */
+ extern int in_long_press;
 int rpmh_rsc_send_data(struct rsc_drv *drv, const struct tcs_request *msg)
 {
 	int ret;
+	int count = 0;
 
 	if (!msg || !msg->cmds || !msg->num_cmds ||
 	    msg->num_cmds > MAX_RPMH_PAYLOAD) {
@@ -465,7 +480,13 @@ int rpmh_rsc_send_data(struct rsc_drv *drv, const struct tcs_request *msg)
 			pr_info_ratelimited("DRV:%s TCS Busy, retrying RPMH message send: addr=%#x\n",
 					    drv->name, msg->cmds[0].addr);
 			udelay(10);
+			count++;
 		}
+		if ((count == 50000) && (in_long_press)) {
+			printk(KERN_ERR "Long Press :TCS Busy but log saved!");
+			break;
+		}
+
 	} while (ret == -EBUSY);
 
 	return ret;

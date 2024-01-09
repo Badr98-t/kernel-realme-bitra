@@ -680,9 +680,6 @@ static int qcom_smp2p_probe(struct platform_device *pdev)
 
 	return 0;
 
-unreg_ws:
-	wakeup_source_unregister(smp2p->ws);
-
 unwind_interfaces:
 	list_for_each_entry(entry, &smp2p->inbound, node)
 		irq_domain_remove(entry->domain);
@@ -706,8 +703,6 @@ static int qcom_smp2p_remove(struct platform_device *pdev)
 {
 	struct qcom_smp2p *smp2p = platform_get_drvdata(pdev);
 	struct smp2p_entry *entry;
-
-	wakeup_source_unregister(smp2p->ws);
 
 	list_for_each_entry(entry, &smp2p->inbound, node)
 		irq_domain_remove(entry->domain);

@@ -238,11 +238,10 @@ static int msm_hang_detect_probe(struct platform_device *pdev)
 	struct device_node *cpu_node;
 	struct device_node *node = pdev->dev.of_node;
 	struct hang_detect *hang_det = NULL;
-	int cpu, ret, cpu_count = 0, cluster_cpu_count = 0;
+	int cpu, ret, cpu_count = 0;
 	const char *name;
 	u32 treg[NR_CPUS] = {0}, creg[NR_CPUS] = {0};
 	u32 num_reg = 0;
-	u32 fw_cluster_id;
 
 	if (!pdev->dev.of_node || !enable)
 		return -ENODEV;
