@@ -36,7 +36,7 @@ VERBOSE=0
 KERVER=$(make kernelversion)
 
 # Specify Final Zip Name
-ZIPNAME=Meteoric
+ZIPNAME=Zorok
 
 # Zip version
 VERSION=$(cat $KERNEL_DIR/Version)
@@ -136,18 +136,17 @@ function choices() {
         [yY] )
             if [ $(ls $KERNEL_DIR/KernelSU 2>/dev/null | wc -l) -eq 0 ]; then
                 rm -rf $KERNEL_DIR/KernelSU
-                git submodule update --init --recursive KernelSU
-            elif [ $(ls $KERNEL_DIR/KernelSU 2>/dev/null | wc -l) -ne 0 ]; then
-            	ZIPNAME=Meteoric-KernelSU
+                git submodule update --init --recursive KernelSU            elif [ $(ls $KERNEL_DIR/KernelSU 2>/dev/null | wc -l) -ne 0 ]; then
+            	ZIPNAME=Zorok-KernelSU
             	KSU_CONFIG=ksu.config
             	if [ $(grep -c "KSU" arch/arm64/configs/$DEFCONFIG) -eq 0 ]; then
-                    sed -i "s/-Meteoric/-Meteoric-$VERSION-KSU/" arch/arm64/configs/$DEFCONFIG
+                    sed -i "s/-Zorok/-Zorok-$VERSION-KSU/" arch/arm64/configs/$DEFCONFIG
             	fi
             fi
             ;;
          *)
             if [ $(grep -c $VERSION arch/arm64/configs/$DEFCONFIG) -eq 0 ]; then
-                sed -i "s/-Meteoric/-Meteoric-$VERSION/" arch/arm64/configs/$DEFCONFIG
+                sed -i "s/-Zorok/-Zorok-$VERSION/" arch/arm64/configs/$DEFCONFIG
             fi
             ;;
     esac
@@ -163,10 +162,10 @@ function choices() {
     # Interrupt detected
     if [ $SIGINT_DETECT -eq 1 ]; then
         if [ $(grep -c "KSU" arch/arm64/configs/$DEFCONFIG) -ne 0 ]; then
-            sed -i "s/-Meteoric-$VERSION-KSU/-Meteoric/" arch/arm64/configs/$DEFCONFIG
+            sed -i "s/-Zorok-$VERSION-KSU/-Zorok/" arch/arm64/configs/$DEFCONFIG
         fi
         if [ $(grep -c $VERSION arch/arm64/configs/$DEFCONFIG) -ne 0 ]; then
-            sed -i "s/-Meteoric-$VERSION/-Meteoric/" arch/arm64/configs/$DEFCONFIG
+            sed -i "s/-Zorok-$VERSION/-Zorok/" arch/arm64/configs/$DEFCONFIG
         fi
         exit
     fi
@@ -192,10 +191,10 @@ function compile() {
     V=$VERBOSE 2>&1 | tee out/error.log
 
     # KernelSU
-    if [ $ZIPNAME = Meteoric-KernelSU ]; then
+    if [ $ZIPNAME = Zorok-KernelSU ]; then
         sed -i 's/CONFIG_KERNELSU=y/# CONFIG_KERNELSU is not set/g' out/.config
         sed -i '/CONFIG_KERNELSU=y/d' out/defconfig
-        sed -i "s/-Meteoric-$VERSION-KSU/-Meteoric/" out/defconfig out/.config arch/arm64/configs/$DEFCONFIG
+        sed -i "s/-Zorok-$VERSION-KSU/-Zorok/" out/defconfig out/.config arch/arm64/configs/$DEFCONFIG
         
         if [ $(grep -c "# KernelSU" arch/arm64/configs/$DEFCONFIG) -eq 1 ]; then
             sed -i 's/CONFIG_KERNELSU=y/# CONFIG_KERNELSU is not set/g' arch/arm64/configs/$DEFCONFIG
@@ -203,7 +202,7 @@ function compile() {
             sed -i '/CONFIG_KERNELSU=y/d' arch/arm64/configs/$DEFCONFIG
         fi
     else
-        sed -i "s/-Meteoric-$VERSION/-Meteoric/" out/defconfig out/.config arch/arm64/configs/$DEFCONFIG
+        sed -i "s/-Zorok-$VERSION/-Zorok/" out/defconfig out/.config arch/arm64/configs/$DEFCONFIG
     fi
 
     # Verify build
@@ -253,7 +252,7 @@ function zipping() {
         read -p "Do you want to do a github release? If unsure, say N. (Y/N) " GIT_RESP 
         case $GIT_RESP in
             [yY] )
-                gh release create $VERSION out/$FINAL_ZIP --repo $RELEASE_REPO --title Meteoric-$VERSION
+                gh release create $VERSION out/$FINAL_ZIP --repo $RELEASE_REPO --title Zorok-$VERSION
                 ;;
             *)
                 read -p "Do you want to upload files to the current github release? If unsure, say N. (Y/N) " UPLOAD_RESP 
