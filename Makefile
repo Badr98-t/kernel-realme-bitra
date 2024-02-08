@@ -725,7 +725,7 @@ KBUILD_CFLAGS   += -Os
 KBUILD_AFLAGS   += -Os
 KBUILD_LDFLAGS  += -Os
 else ifeq ($(cc-name),clang)
-KBUILD_CFLAGS   += -O3 -march=armv8.2-a+lse+crypto+dotprod -mllvm -polly --cuda-path=/dev/null
+KBUILD_CFLAGS   += -O3 -march=armv8.2-a+lse+crypto+dotprod --cuda-path=/dev/null
 KBUILD_AFLAGS   += -O3 -march=armv8.2-a+lse+crypto+dotprod
 KBUILD_LDFLAGS  += -O3
 else
