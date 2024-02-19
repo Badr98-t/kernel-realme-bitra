@@ -718,15 +718,6 @@ boost_write(struct cgroup_subsys_state *css, struct cftype *cft,
 	return 0;
 }
 
-#ifdef CONFIG_STUNE_ASSIST
-static int sched_boost_override_write_wrapper(struct cgroup_subsys_state *css,
-					      struct cftype *cft, u64 override)
-{
-	if (task_is_booster(current))
-		return 0;
-
-	return sched_boost_override_write(css, cft, override);
-}
 
 #ifdef CONFIG_SCHED_WALT
 static int sched_colocate_write_wrapper(struct cgroup_subsys_state *css,
@@ -756,7 +747,7 @@ static int prefer_idle_write_wrapper(struct cgroup_subsys_state *css,
 
 	return prefer_idle_write(css, cft, prefer_idle);
 }
-#endif
+
 
 static struct cftype files[] = {
 #ifdef CONFIG_SCHED_WALT
@@ -834,7 +825,6 @@ static void write_default_values(struct cgroup_subsys_state *css)
 		if (!strcmp(css->cgroup->kn->name, tgt.name)) {
 			boost_write(css, NULL, tgt.boost);
 			prefer_idle_write(css, NULL, tgt.prefer_idle);
-			sched_boost_override_write(css, NULL, tgt.no_override);
 #ifndef CONFIG_SCHED_WALT
 			pr_info("stune_assist: setting values for %s: boost=%d prefer_idle=%d no_override=%d\n",
 				tgt.name, tgt.boost, tgt.prefer_idle, tgt.no_override);
