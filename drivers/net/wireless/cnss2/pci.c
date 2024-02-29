@@ -2487,8 +2487,6 @@ register_driver:
 		cnss_pr_dbg("Reboot or shutdown is in progress, ignore register driver\n");
 		return -EINVAL;
 	}
-
-register_driver:
 	reinit_completion(&plat_priv->power_up_complete);
 	ret = cnss_driver_event_post(plat_priv,
 				     CNSS_DRIVER_EVENT_REGISTER_DRIVER,
