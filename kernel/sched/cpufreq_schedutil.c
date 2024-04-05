@@ -1264,18 +1264,20 @@ static int sugov_init(struct cpufreq_policy *policy)
 	tunables->hispeed_load = DEFAULT_HISPEED_LOAD;
 	tunables->hispeed_freq = 0;
 
-	switch (policy->cpu) {
-	default:
-	case 0:
-		tunables->rtg_boost_freq = DEFAULT_CPU0_RTG_BOOST_FREQ;
-		break;
-	case 4:
-		tunables->rtg_boost_freq = DEFAULT_CPU4_RTG_BOOST_FREQ;
-		break;
-	case 7:
-		tunables->rtg_boost_freq = DEFAULT_CPU7_RTG_BOOST_FREQ;
-		break;
+	if (cpumask_test_cpu(policy->cpu, cpu_lp_mask)) {
+		tunables->up_rate_limit_us = 500;
+		tunables->down_rate_limit_us = 1000;
 	}
+
+	if (cpumask_test_cpu(policy->cpu, cpu_perf_mask)) {
+		tunables->up_rate_limit_us = 500;
+		tunables->down_rate_limit_us = 1000;
+	}
+
+        if (cpumask_test_cpu(policy->cpu, cpu_prime_mask)) {
+                tunables->up_rate_limit_us = 500;
+                tunables->down_rate_limit_us = 1000;
+        }
 
 	policy->governor_data = sg_policy;
 	sg_policy->tunables = tunables;
