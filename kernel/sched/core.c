@@ -6,8 +6,6 @@
  *  Copyright (C) 1991-2002  Linus Torvalds
  */
 #include "sched.h"
-
-#include <linux/lrng.h>
 #include <linux/nospec.h>
 
 #include <linux/kcov.h>
