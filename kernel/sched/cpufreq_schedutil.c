@@ -1257,18 +1257,18 @@ static int sugov_init(struct cpufreq_policy *policy)
 	tunables->hispeed_freq = 0;
 
 	if (cpumask_test_cpu(policy->cpu, cpu_lp_mask)) {
-		tunables->up_rate_limit_us = 500;
-		tunables->down_rate_limit_us = 1000;
+		tunables->up_rate_limit_us = 4000;
+		tunables->down_rate_limit_us = 8000;
 	}
 
 	if (cpumask_test_cpu(policy->cpu, cpu_perf_mask)) {
-		tunables->up_rate_limit_us = 500;
-		tunables->down_rate_limit_us = 1000;
+		tunables->up_rate_limit_us = 4000;
+		tunables->down_rate_limit_us = 8000;
 	}
 
         if (cpumask_test_cpu(policy->cpu, cpu_prime_mask)) {
-                tunables->up_rate_limit_us = 500;
-                tunables->down_rate_limit_us = 1000;
+                tunables->up_rate_limit_us = 4000;
+                tunables->down_rate_limit_us = 8000;
         }
 
 	policy->governor_data = sg_policy;
