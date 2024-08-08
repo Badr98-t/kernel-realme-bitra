@@ -234,7 +234,7 @@ source "drivers/gpu/msm/Kconfig"
 source "drivers/energy_model/Kconfig"
 
 menu "KernelSU"
-config KSU
-        bool "Ship KernelSU with kernel"
+config KERNELSU
+	bool "Ship kernelsu with kernel"
 	default y
 endmenu
